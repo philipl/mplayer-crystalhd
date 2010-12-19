@@ -20,7 +20,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Credits:
- * fast_memcpy: From libcrystalhd
  * extract_sps_pps_from_avcc: from xbmc
  */
 
@@ -40,6 +39,7 @@
 #include "config.h"
 #include "mp_msg.h"
 #include "vd_internal.h"
+#include "libvo/fastmemcpy.h"
 
 #define OUTPUT_PROC_TIMEOUT 2000
 
@@ -190,47 +190,6 @@ static uint8_t name2subtype(Priv *priv, const char *name)
       return BC_MSUBTYPE_INVALID;
    }
 }
-
-
-#if HAVE_SSE2
-#define fast_memcpy(a, b, c) sse2_memcpy(a, b, c)
-static void sse2_memcpy(uint8_t *dst, const uint8_t *src, uint32_t count)
-{
-        {
-                if (((((uintptr_t) dst) & 0xf) == 0) && ((((uintptr_t) src) & 0xf) == 0))
-                {
-                        while (count >= (16*4))
-                        {
-                                _mm_stream_si128((__m128i *) (dst+ 0*16),  _mm_load_si128((__m128i *) (src+ 0*16)));
-                                _mm_stream_si128((__m128i *) (dst+ 1*16),  _mm_load_si128((__m128i *) (src+ 1*16)));
-                                _mm_stream_si128((__m128i *) (dst+ 2*16),  _mm_load_si128((__m128i *) (src+ 2*16)));
-                                _mm_stream_si128((__m128i *) (dst+ 3*16),  _mm_load_si128((__m128i *) (src+ 3*16)));
-                                count -= 16*4;
-                                src += 16*4;
-                                dst += 16*4;
-                        }
-                }
-                else
-                {
-                        while (count >= (16*4))
-                        {
-                                _mm_storeu_si128((__m128i *) (dst+ 0*16),  _mm_loadu_si128((__m128i *) (src+ 0*16)));
-                                _mm_storeu_si128((__m128i *) (dst+ 1*16),  _mm_loadu_si128((__m128i *) (src+ 1*16)));
-                                _mm_storeu_si128((__m128i *) (dst+ 2*16),  _mm_loadu_si128((__m128i *) (src+ 2*16)));
-                                _mm_storeu_si128((__m128i *) (dst+ 3*16),  _mm_loadu_si128((__m128i *) (src+ 3*16)));
-                                count -= 16*4;
-                                src += 16*4;
-                                dst += 16*4;
-                        }
-                }
-        }
-
-        while (count --)
-                *dst++ = *src++;
-}
-#else
-#define fast_memcpy(a, b, c) memcpy(a, b, c)
-#endif
 
 
 /*****************************************************************************
@@ -536,8 +495,6 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
           bottom_field = (output.PicInfo.flags & VDEC_FLAG_BOTTOMFIELD) == VDEC_FLAG_BOTTOMFIELD;
 
          {
-            int dY = 0;
-            int sY = 0;
             int width = output.PicInfo.width * 2; // 16bits per pixel
             int height = output.PicInfo.height;
             int dStride = priv->mpi->stride[0];
@@ -545,6 +502,9 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
             uint8_t *dst = priv->mpi->planes[0];
 
             if (interlaced) {
+               int dY = 0;
+               int sY = 0;
+
                height /= 2;
                if (bottom_field) {
                   mp_msg(MSGT_DECVIDEO, MSGL_V, "Interlaced: bottom field\n");
@@ -553,13 +513,15 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
                   mp_msg(MSGT_DECVIDEO, MSGL_V, "Interlaced: top field\n");
                   dY = 0;
                }
-            }
 
-            for (sY = 0; sY < height; dY++, sY++) {
-               fast_memcpy(&(dst[dY * dStride]), &(src[sY * width]), width);
-               if (interlaced) {
-                  dY++;
+               for (sY = 0; sY < height; dY++, sY++) {
+                  fast_memcpy(&(dst[dY * dStride]), &(src[sY * width]), width);
+                  if (interlaced) {
+                     dY++;
+                  }
                }
+            } else {
+               memcpy_pic(dst, src, width, height, dStride, width);
             }
          }
          priv->need_second_field = interlaced && !priv->need_second_field;
