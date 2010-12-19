@@ -18,6 +18,10 @@
  * You should have received a copy of the GNU General Public License along
  * with MPlayer; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Credits:
+ * fast_memcpy: From libcrystalhd
+ * extract_sps_pps_from_avcc: from xbmc
  */
 
 /*****************************************************************************
@@ -37,7 +41,7 @@
 #include "mp_msg.h"
 #include "vd_internal.h"
 
-#define OUTPUT_PROC_TIMEOUT 20
+#define OUTPUT_PROC_TIMEOUT 2000
 
 
 /*****************************************************************************
