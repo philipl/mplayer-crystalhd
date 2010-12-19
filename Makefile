@@ -291,6 +291,8 @@ SRCS_COMMON-$(XMMS_PLUGINS)          += libmpdemux/demux_xmms.c
 SRCS_COMMON-$(XVID4)                 += libmpcodecs/vd_xvid4.c
 SRCS_COMMON-$(ZR)                    += libmpcodecs/vd_zrmjpeg.c \
                                         libmpcodecs/vf_zrmjpeg.c
+SRCS_COMMON-$(CRYSTALHD)             += libmpcodecs/vd_crystalhd.c
+
 SRCS_COMMON = asxparser.c \
               bstr.c \
               codec-cfg.c \

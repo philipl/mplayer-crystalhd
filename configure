@@ -431,6 +431,7 @@ Codecs:
   --disable-libopencore_amrnb disable libopencore_amr narrowband [autodetect]
   --disable-libopencore_amrwb disable libopencore_amr wideband [autodetect]
   --disable-libopenjpeg     disable OpenJPEG (JPEG2000) input/output support [autodetect]
+  --disable-crystalhd       disable CrystalHD support [autodetect]
   --disable-decoder=DECODER disable specified FFmpeg decoder
   --enable-decoder=DECODER  enable specified FFmpeg decoder
   --disable-encoder=ENCODER disable specified FFmpeg encoder
@@ -775,6 +776,7 @@ _vidix_pcidb=yes
 _dhahelper=no
 _svgalib_helper=no
 _joystick=no
+_crystalhd=auto
 _xvid=auto
 _xvid_lavc=auto
 _x264=auto
@@ -1219,6 +1221,8 @@ for ac_option do
   --disable-svgalib_helper)     _svgalib_helper=no      ;;
   --enable-joystick)    _joystick=yes   ;;
   --disable-joystick)   _joystick=no    ;;
+  --enable-crystalhd)   _crystalhd=yes  ;;
+  --disable-crystalhd)  _crystalhd=no   ;;
   --enable-xvid)        _xvid=yes       ;;
   --disable-xvid)       _xvid=no        ;;
   --enable-xvid-lavc)   _xvid_lavc=yes  ;;
@@ -6963,6 +6967,21 @@ else
 fi
 echores "$_libdv"
 
+echocheck "CrystalHD"
+if test "$_crystalhd" = auto ; then
+   _crystalhd=no
+   statement_check_broken libcrystalhd/bc_dts_types.h libcrystalhd/libcrystalhd_if.h 'DtsGetVersion(0, 0, 0)' -lcrystalhd $_ld_lm && _crystalhd=yes
+fi
+
+if test "$_crystalhd" = yes ; then
+   extra_ldflags="$extra_ldflags -lcrystalhd"
+   def_crystalhd="#define CONFIG_CRYSTALHD 1"
+   codecmodules="crystalhd $codecmodules"
+else
+   def_crystalhd="#define CONFIG_CRYSTALHD"
+   nocodecmodules="crystalhd $nocodecmodules"
+fi
+echores "$_crystalhd"
 
 echocheck "Xvid"
 if test "$_xvid" = auto ; then
@@ -8124,6 +8143,7 @@ XVMC = $_xvmc
 XVR100 = $_xvr100
 YUV4MPEG = $_yuv4mpeg
 ZR = $_zr
+CRYSTALHD = $_crystalhd
 
 # FFmpeg
 FFMPEG     = $ffmpeg
@@ -8406,6 +8426,7 @@ $def_vorbis
 $def_x264
 $def_xvid
 $def_zlib
+$def_crystalhd
 
 $def_libnut
 

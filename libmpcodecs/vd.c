@@ -58,6 +58,7 @@ extern const vd_functions_t mpcodecs_vd_xvid;
 extern const vd_functions_t mpcodecs_vd_libdv;
 extern const vd_functions_t mpcodecs_vd_lzo;
 extern const vd_functions_t mpcodecs_vd_qtvideo;
+extern const vd_functions_t mpcodecs_vd_crystalhd;
 
 /* Please do not add any new decoders here. If you want to implement a new
  * decoder, add it to libavcodec, except for wrappers around external
@@ -109,6 +110,9 @@ const vd_functions_t * const mpcodecs_vd_drivers[] = {
 #endif
 #ifdef CONFIG_QTX_CODECS
     &mpcodecs_vd_qtvideo,
+#endif
+#ifdef CONFIG_CRYSTALHD
+    &mpcodecs_vd_crystalhd,
 #endif
     /* Please do not add any new decoders here. If you want to implement a new
      * decoder, add it to libavcodec, except for wrappers around external
