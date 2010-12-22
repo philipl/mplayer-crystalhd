@@ -277,9 +277,6 @@ static int init(sh_video_t *sh)
         format.OptFlags = 0x80000000 | vdecFrameRate59_94 | 0x40;
         format.width = sh->disp_w;
         format.height = sh->disp_h;
-        if (format.height == 1088) {
-           format.height = 1080;
-        }
 
         subtype = name2subtype(priv, sh->codec->name);
         switch (subtype) {
