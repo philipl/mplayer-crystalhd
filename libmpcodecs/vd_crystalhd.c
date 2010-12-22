@@ -251,6 +251,7 @@ static int init(sh_video_t *sh)
                         DTS_LOAD_FILE_PLAY_FW |
                         DTS_SKIP_TX_CHK_CPB |
                         DTS_PLAYBACK_DROP_RPT_MODE |
+                        DTS_SINGLE_THREADED_MODE |
                         DTS_DFLT_RESOLUTION(vdecRESOLUTION_1080p23_976);
 
         mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD Init for %s\n",
@@ -275,7 +276,7 @@ static int init(sh_video_t *sh)
         memset(&format, 0, sizeof(BC_INPUT_FORMAT));
         format.FGTEnable = FALSE;
         format.Progressive = TRUE;
-        format.OptFlags = 0x80000000 | vdecFrameRate59_94 | 0x40;
+        format.OptFlags = 0x80000000 | vdecFrameRate59_94 | 0x40 | 0x80;
         format.width = sh->disp_w;
         format.height = sh->disp_h;
 
