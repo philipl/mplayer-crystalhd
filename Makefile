@@ -31,6 +31,7 @@ SRCS_COMMON-$(BITMAP_FONT)           += sub/font_load.c
 SRCS_COMMON-$(CDDA)                  += stream/stream_cdda.c \
                                         stream/cdinfo.c
 SRCS_COMMON-$(CDDB)                  += stream/stream_cddb.c
+SRCS_COMMON-$(CRYSTALHD)             += libmpcodecs/vd_crystalhd.c
 SRCS_COMMON-$(DVBIN)                 += stream/dvb_tune.c \
                                         stream/stream_dvb.c
 SRCS_COMMON-$(DVDNAV)                += stream/stream_dvdnav.c
@@ -291,7 +292,6 @@ SRCS_COMMON-$(XMMS_PLUGINS)          += libmpdemux/demux_xmms.c
 SRCS_COMMON-$(XVID4)                 += libmpcodecs/vd_xvid4.c
 SRCS_COMMON-$(ZR)                    += libmpcodecs/vd_zrmjpeg.c \
                                         libmpcodecs/vf_zrmjpeg.c
-SRCS_COMMON-$(CRYSTALHD)             += libmpcodecs/vd_crystalhd.c
 
 SRCS_COMMON = asxparser.c \
               bstr.c \

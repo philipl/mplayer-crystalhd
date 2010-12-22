@@ -8000,6 +8000,7 @@ CDDA = $_cdda
 CDDB = $_cddb
 COREAUDIO = $_coreaudio
 COREVIDEO = $_corevideo
+CRYSTALHD = $_crystalhd
 DART = $_dart
 DGA = $_dga
 DIRECT3D = $_direct3d
@@ -8143,7 +8144,6 @@ XVMC = $_xvmc
 XVR100 = $_xvr100
 YUV4MPEG = $_yuv4mpeg
 ZR = $_zr
-CRYSTALHD = $_crystalhd
 
 # FFmpeg
 FFMPEG     = $ffmpeg
@@ -8402,6 +8402,7 @@ $def_vcd
 
 
 /* codec libraries */
+$def_crystalhd
 $def_faac
 $def_faad
 $def_liba52
@@ -8426,7 +8427,6 @@ $def_vorbis
 $def_x264
 $def_xvid
 $def_zlib
-$def_crystalhd
 
 $def_libnut
 
