@@ -278,7 +278,7 @@ static int init(sh_video_t *sh)
         format.width = sh->disp_w;
         format.height = sh->disp_h;
 
-        subtype = name2subtype(priv, sh->codec->name);
+        subtype = name2subtype(priv, sh->codec->dll);
         switch (subtype) {
         case BC_MSUBTYPE_AVC1:
            format.startCodeSz = priv->nal_length_size;
