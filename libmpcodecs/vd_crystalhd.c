@@ -464,8 +464,6 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
 
       if (output.PoutFlags & BC_POUT_FLAGS_PIB_VALID) {
          uint8_t interlaced = 0, top_field = 0, bottom_field = 0;
-         mp_msg(MSGT_DECVIDEO, MSGL_V, "Picture: %u, Raw first bytes: 0x%x 0x%x 0x%x 0x%x\n",
-                                     output.PicInfo.picture_number, output.Ybuff[0], output.Ybuff[1], output.Ybuff[2], output.Ybuff[3]);
          mp_msg(MSGT_DECVIDEO, MSGL_V, "YBuffSz: %u\n", output.YbuffSz);
          mp_msg(MSGT_DECVIDEO, MSGL_V, "YBuffDoneSz: %u\n", output.YBuffDoneSz);
          mp_msg(MSGT_DECVIDEO, MSGL_V, "UVBuffDoneSz: %u\n", output.UVBuffDoneSz);
@@ -482,7 +480,7 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tColor Primaries: %u\n", output.PicInfo.colour_primaries);
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tMetaData: %u\n", output.PicInfo.picture_meta_payload);
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tSession Number: %u\n", output.PicInfo.sess_num);
-          mp_msg(MSGT_DECVIDEO, MSGL_V, "\tTimeStamp: %u\n", output.PicInfo.ycom);
+          mp_msg(MSGT_DECVIDEO, MSGL_V, "\tycom: %u\n", output.PicInfo.ycom);
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tCustom Aspect: %u\n", output.PicInfo.custom_aspect_ratio_width_height);
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tFrames to Drop: %u\n", output.PicInfo.n_drop);
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tH264 Valid Fields: 0x%08x\n", output.PicInfo.other.h264.valid);
