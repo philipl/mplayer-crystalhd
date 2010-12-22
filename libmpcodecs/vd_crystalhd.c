@@ -1,7 +1,10 @@
 /*
- * - CrystalHD decoder module for mplayer/mencoder -
+ * - CrystalHD decoder module -
  *
  * Copyright(C) 2010 Philip Langdale <mplayer.philipl@overt.org>
+ *
+ * Credits:
+ * extract_sps_pps_from_avcc: from xbmc
  *
  * This file is part of MPlayer.
  *
@@ -19,8 +22,6 @@
  * with MPlayer; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Credits:
- * extract_sps_pps_from_avcc: from xbmc
  */
 
 /*****************************************************************************
