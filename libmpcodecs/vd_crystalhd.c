@@ -401,7 +401,8 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
       if (len != 0) {
          int32_t tx_free = (int32_t)DtsTxFreeSize(dev);
          if (len < tx_free - 1024) {
-            ret = DtsProcInput(dev, data, len, sh->pts, 0);
+            uint64_t pts = (uint64_t)(sh->pts * 1000) * 1000 * 10;
+            ret = DtsProcInput(dev, data, len, pts, 0);
             if (ret == BC_STS_BUSY) {
                usleep(1000);
             } else if (ret != BC_STS_SUCCESS) {
@@ -410,6 +411,7 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
             }
             len = 0; // We don't want to try and resubmit the input...
             input_full = 0;
+            priv->unseen++;
          } else {
             mp_msg(MSGT_DECVIDEO, MSGL_STATUS, "CrystalHD: Input buffer full\n");
             input_full = 1;
@@ -428,14 +430,13 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
        */
       if (decoder_status.ReadyListCount == 0) {
          usleep(1000);
-         mp_msg(MSGT_DECVIDEO, MSGL_STATUS, "CrystalHD: No frames ready\n");
       } else {
          break;
       }
    } while (input_full == 1);
    if (decoder_status.ReadyListCount == 0) {
-      priv->unseen++;
-      return &mpi_no_picture;
+      mp_msg(MSGT_DECVIDEO, MSGL_STATUS, "CrystalHD: No frames ready. Returning\n");
+      return NULL;
    }
 
    memset(&output, 0, sizeof(BC_DTS_PROC_OUT));
@@ -544,6 +545,7 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
          return &mpi_no_picture;
       } else {
          mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: Returning MPI: %p\n", priv->mpi);
+         priv->unseen--;
          return priv->mpi;
       }
    } else if (ret == BC_STS_BUSY) {
