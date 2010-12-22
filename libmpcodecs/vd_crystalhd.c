@@ -253,7 +253,7 @@ static int init(sh_video_t *sh)
                         DTS_DFLT_RESOLUTION(vdecRESOLUTION_1080p23_976);
 
         mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD Init for %s\n",
-               sh->codec->name);
+               sh->codec->dll);
 
 	switch(sh->codec->outfmt[sh->outfmtidx]){
 	case IMGFMT_YUY2:
