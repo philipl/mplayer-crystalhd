@@ -276,7 +276,7 @@ static int init(sh_video_t *sh)
         memset(&format, 0, sizeof(BC_INPUT_FORMAT));
         format.FGTEnable = FALSE;
         format.Progressive = TRUE;
-        format.OptFlags = 0x80000000 | vdecFrameRate59_94 | 0x40 | 0x80;
+        format.OptFlags = 0x80000000 | vdecFrameRate59_94 | 0x40;
         format.width = sh->disp_w;
         format.height = sh->disp_h;
 
