@@ -70,6 +70,13 @@ static mp_image_t mpi_no_picture =
 
 
 /*****************************************************************************
+ * Function Declarations
+ ****************************************************************************/
+
+static mp_image_t* receive_frame(sh_video_t *sh);
+
+
+/*****************************************************************************
  * Helper functions
  ****************************************************************************/
 
@@ -382,13 +389,11 @@ static void uninit(sh_video_t *sh){
 static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
 {
    BC_STATUS ret;
-   BC_DTS_PROC_OUT output;
    BC_DTS_STATUS decoder_status;
    Priv *priv = sh->context;
    HANDLE dev = priv->dev;
-
+   mp_image_t *out_image = NULL;
    uint8_t input_full = 0;
-   uint8_t eos;
 
    mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: decode_frame\n");
 
@@ -437,6 +442,33 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
       mp_msg(MSGT_DECVIDEO, MSGL_STATUS, "CrystalHD: No frames ready. Returning\n");
       return NULL;
    }
+
+   out_image = receive_frame(sh);
+   if (out_image == &mpi_no_picture) {
+      ret = DtsGetDriverStatus(dev, &decoder_status);
+      if (ret == BC_STS_SUCCESS && decoder_status.ReadyListCount > 0) {
+         mp_image_t *next = receive_frame(sh);
+         if (next) {
+            mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: Got second field on first call.\n");
+            out_image = next;
+         }
+      }
+   }
+   return out_image;
+}
+
+
+/*============================================================================
+ * receive_frame - Receive a frame from the decoder
+ *==========================================================================*/
+
+static mp_image_t* receive_frame(sh_video_t *sh)
+{
+   BC_STATUS ret;
+   BC_DTS_PROC_OUT output;
+   Priv *priv = sh->context;
+   HANDLE dev = priv->dev;
+   uint8_t eos;
 
    memset(&output, 0, sizeof(BC_DTS_PROC_OUT));
    output.PicInfo.width = sh->disp_w;
@@ -553,6 +585,7 @@ static mp_image_t* decode(sh_video_t *sh, void* data, int len, int flags)
       return NULL;
    }
 }
+
 
 /*****************************************************************************
  * Module structure definition
