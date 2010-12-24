@@ -519,8 +519,8 @@ static mp_image_t* receive_frame(sh_video_t *sh)
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tFrames to Drop: %u\n", output.PicInfo.n_drop);
           mp_msg(MSGT_DECVIDEO, MSGL_V, "\tH264 Valid Fields: 0x%08x\n", output.PicInfo.other.h264.valid);
 
-          interlaced =  (output.PicInfo.flags & VDEC_FLAG_INTERLACED_SRC);// &&
-                       //!(output.PicInfo.flags & VDEC_FLAG_UNKNOWN_SRC);
+          interlaced =  (output.PicInfo.flags & VDEC_FLAG_INTERLACED_SRC) &&
+                       !(output.PicInfo.flags & VDEC_FLAG_UNKNOWN_SRC);
           top_field = (output.PicInfo.flags & VDEC_FLAG_TOPFIELD) == VDEC_FLAG_TOPFIELD;
           bottom_field = (output.PicInfo.flags & VDEC_FLAG_BOTTOMFIELD) == VDEC_FLAG_BOTTOMFIELD;
 
