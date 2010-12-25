@@ -50,7 +50,7 @@
  * Module private data
  ****************************************************************************/
 
-typedef struct {
+typedef struct CHDContext {
     HANDLE dev;
     mp_image_t* mpi;
 
