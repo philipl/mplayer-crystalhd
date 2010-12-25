@@ -59,7 +59,6 @@ typedef struct {
     uint8_t nal_length_size;
     uint8_t is_nal;
 
-    uint8_t need_second_field;
     uint32_t unseen;
 } CHDContext;
 
@@ -73,9 +72,8 @@ static mp_image_t mpi_no_picture =
  * Static function Declarations
  ****************************************************************************/
 
-static mp_image_t* receive_frame(sh_video_t *sh);
-static void copy_frame(CHDContext *priv, BC_DTS_PROC_OUT *output,
-                       uint8_t interlaced);
+static mp_image_t *receive_frame(sh_video_t *sh);
+static mp_image_t *copy_frame(sh_video_t *sh, BC_DTS_PROC_OUT *output);
 
 /*****************************************************************************
  * Helper functions
@@ -272,7 +270,6 @@ static int control(sh_video_t *sh, int cmd, void* arg, ...)
             return CONTROL_FALSE;
         }
     case VDCTRL_RESYNC_STREAM:
-        priv->need_second_field = 0;
         priv->unseen = 0;
         DtsFlushInput(priv->dev, 4);
         return CONTROL_TRUE;
@@ -519,7 +516,6 @@ static mp_image_t* receive_frame(sh_video_t *sh)
     BC_DTS_PROC_OUT output;
     CHDContext *priv = sh->context;
     HANDLE dev = priv->dev;
-    uint8_t eos;
 
     memset(&output, 0, sizeof(BC_DTS_PROC_OUT));
     output.PicInfo.width = sh->disp_w;
@@ -537,50 +533,19 @@ static mp_image_t* receive_frame(sh_video_t *sh)
         mpcodecs_config_vo(sh, sh->disp_w, sh->disp_h, IMGFMT_YUY2);
         return NULL;
     } else if (ret == BC_STS_SUCCESS) {
-        //mp_msg(MSGT_DECVIDEO, MSGL_V, "Proceeding to evaluate output\n");
-        mp_image_t* mpi = NULL;
-        if (!priv->need_second_field) {
-            mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: Allocating MPI\n");
-            mpi = mpcodecs_get_image(sh, MP_IMGTYPE_TEMP,
-              	                     MP_IMGFLAG_ACCEPT_STRIDE,
-                                     sh->disp_w, sh->disp_h);
-            priv->mpi = mpi;
-        }
+        mp_image_t *mpi = NULL;
 
         if (output.PoutFlags & BC_POUT_FLAGS_PIB_VALID) {
-            uint8_t interlaced = 0;
-
             print_frame_info(&output);
-
-            interlaced =  (output.PicInfo.flags & VDEC_FLAG_INTERLACED_SRC) &&
-                       !(output.PicInfo.flags & VDEC_FLAG_UNKNOWN_SRC);
-
-            copy_frame(priv, &output, interlaced);
-
-            priv->need_second_field = interlaced && !priv->need_second_field;
-
-            if (interlaced) {
-                priv->mpi->fields |= MP_IMGFIELD_INTERLACED;
-                if (!(output.PicInfo.flags & VDEC_FLAG_BOTTOM_FIRST)) {
-                    priv->mpi->fields |= MP_IMGFIELD_TOP_FIRST;
-                }
-            }
+            mpi = copy_frame(sh, &output);
         }
         DtsReleaseOutputBuffs(dev, NULL, FALSE);
 
-        DtsIsEndOfStream(dev, &eos);
-        if (eos) {
-            mp_msg(MSGT_DECVIDEO, MSGL_STATUS, "CrystalHD: Is EOS\n");
-        }
-
-        if (priv->need_second_field) {
-            return &mpi_no_picture;
-        } else {
-            mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: Returning MPI: %p\n",
-                   priv->mpi);
+        mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: Returning MPI: %p\n", mpi);
+        if (mpi != &mpi_no_picture) {
             priv->unseen--;
-            return priv->mpi;
         }
+        return mpi;
     } else if (ret == BC_STS_BUSY) {
         usleep(1000);
         return NULL;
@@ -592,20 +557,29 @@ static mp_image_t* receive_frame(sh_video_t *sh)
 }
 
 
-static void copy_frame(CHDContext *priv,
-                       BC_DTS_PROC_OUT *output, 
-                       uint8_t interlaced)
+static mp_image_t *copy_frame(sh_video_t *sh,
+                              BC_DTS_PROC_OUT *output)
 {
+    mp_image_t *mpi = mpcodecs_get_image(sh, MP_IMGTYPE_STATIC,
+                                         MP_IMGFLAG_ACCEPT_STRIDE,
+                                         sh->disp_w, sh->disp_h);
+
     int width = output->PicInfo.width * 2; // 16bits per pixel
     int height = output->PicInfo.height;
-    int dStride = priv->mpi->stride[0];
+    int dStride = mpi->stride[0];
     uint8_t *src = output->Ybuff;
-    uint8_t *dst = priv->mpi->planes[0];
+    uint8_t *dst = mpi->planes[0];
 
-    uint8_t top_field = (output->PicInfo.flags & VDEC_FLAG_TOPFIELD) ==
-                        VDEC_FLAG_TOPFIELD;
+    uint8_t interlaced =  (output->PicInfo.flags & VDEC_FLAG_INTERLACED_SRC) &&
+                         !(output->PicInfo.flags & VDEC_FLAG_UNKNOWN_SRC);
     uint8_t bottom_field = (output->PicInfo.flags & VDEC_FLAG_BOTTOMFIELD) ==
                            VDEC_FLAG_BOTTOMFIELD;
+    uint8_t bottom_first = output->PicInfo.flags & VDEC_FLAG_BOTTOM_FIRST;
+    uint8_t need_second_field = interlaced &&
+                                ((!bottom_field && !bottom_first) ||
+                                 (bottom_field && bottom_first));
+
+    mp_msg(MSGT_DECVIDEO, MSGL_V, "CrystalHD: Copying out frame\n");
 
     if (interlaced) {
         int dY = 0;
@@ -615,7 +589,7 @@ static void copy_frame(CHDContext *priv,
         if (bottom_field) {
             mp_msg(MSGT_DECVIDEO, MSGL_V, "Interlaced: bottom field\n");
             dY = 1;
-        } else if (top_field) {
+        } else {
             mp_msg(MSGT_DECVIDEO, MSGL_V, "Interlaced: top field\n");
             dY = 0;
         }
@@ -629,7 +603,17 @@ static void copy_frame(CHDContext *priv,
     } else {
         memcpy_pic(dst, src, width, height, dStride, width);
     }
+
+    if (interlaced) {
+        mpi->fields |= MP_IMGFIELD_INTERLACED;
+        if (!bottom_first) {
+            mpi->fields |= MP_IMGFIELD_TOP_FIRST;
+        }
+    }
+
+    return need_second_field ? &mpi_no_picture : mpi;
 }
+
 
 /*****************************************************************************
  * Module structure definition
