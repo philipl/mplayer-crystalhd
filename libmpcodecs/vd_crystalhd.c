@@ -52,7 +52,6 @@
 
 typedef struct CHDContext {
     HANDLE dev;
-    mp_image_t* mpi;
 
     uint8_t *sps_pps_buf;
     uint32_t sps_pps_size;
