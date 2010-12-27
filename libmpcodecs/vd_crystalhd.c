@@ -179,23 +179,19 @@ static int extract_sps_pps_from_avcc(CHDContext *priv,
 
 static uint8_t dll2subtype(CHDContext *priv, const char *dll)
 {
-    if (strcmp(dll, "chddivx") == 0) {
+    if (strcmp(dll, "mpeg4_crystalhd") == 0) {
         return BC_MSUBTYPE_DIVX;
-    } else if (strcmp(dll, "chddivx3") == 0) {
+    } else if (strcmp(dll, "msmpeg4_crystalhd") == 0) {
         return BC_MSUBTYPE_DIVX311;
-    } else if (strcmp(dll, "chdmpeg1") == 0) {
+    } else if (strcmp(dll, "mpeg1_crystalhd") == 0) {
         return BC_MSUBTYPE_MPEG1VIDEO;
-    } else if (strcmp(dll, "chdmpeg2") == 0) {
+    } else if (strcmp(dll, "mpeg2_crystalhd") == 0) {
         return BC_MSUBTYPE_MPEG2VIDEO;
-    } else if (strcmp(dll, "chdvc1") == 0) {
+    } else if (strcmp(dll, "vc1_crystalhd") == 0) {
         return BC_MSUBTYPE_VC1;
-    } else if (strcmp(dll, "chdwvc1") == 0) {
-        return BC_MSUBTYPE_WVC1;
-    } else if (strcmp(dll, "chdwmv3") == 0) {
+    } else if (strcmp(dll, "wmv3_crystalhd") == 0) {
         return BC_MSUBTYPE_WMV3;
-    } else if (strcmp(dll, "chdwmva") == 0) {
-        return BC_MSUBTYPE_WMVA;
-    } else if (strcmp(dll, "chdh264") == 0) {
+    } else if (strcmp(dll, "h264_crystalhd") == 0) {
         return priv->is_nal ? BC_MSUBTYPE_AVC1 : BC_MSUBTYPE_H264;
     } else {
         return BC_MSUBTYPE_INVALID;
