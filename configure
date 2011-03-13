@@ -7998,7 +7998,6 @@ CDDA = $_cdda
 CDDB = $_cddb
 COREAUDIO = $_coreaudio
 COREVIDEO = $_corevideo
-CRYSTALHD = $crystalhd
 DART = $_dart
 DGA = $_dga
 DIRECT3D = $_direct3d
